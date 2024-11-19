@@ -34,4 +34,37 @@ EOF"
 sudo service fail2ban start
 echo "Done!"
 sudo service fail2ban status
-:q
+
+
+# Report Script
+echo "Specifying script path? (def = $HOME/bin)"
+read opt
+if [ $opt = "def" ]; then
+	$shpath = $HOME/bin
+else
+	read shpath
+fi
+
+if [ ! -d $shpath ]; then
+	mkdir $shpath
+fi
+
+cd $shpath
+
+echo '#!/bin/bash
+sudo bash -c "cat > $HOME/report.txt <<EOF
+Fail2Ban log:
+$(fail2ban-client status sshd | grep -E "Currently banned|Total banned|Banned IP list")
+
+Summary:
+Total Failed: $(journalctl -u ssh.service | egrep -c "Connection closed|Connection reset|drop connection|Timeout before authentication")
+Total failed root login: $(journalctl -u ssh.service | grep -c "authenticating user root")
+
+Updated: $(date)
+
+hehe
+
+EOF"' > $shpath/ssh-report.sh
+
+(crontab -l 2>/dev/null; echo "0 * * * * $HOME/ssh-report.sh") | crontab -
+
