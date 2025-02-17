@@ -55,6 +55,7 @@ sudo bash -c "cat > $shpath/report.txt <<EOF
 Fail2Ban log:
 $(fail2ban-client status sshd | grep -E "Currently banned|Total banned|Banned IP list")
 
+# When log from journalctl is too large, it wont update.
 # Summary:
 # Total Failed: $(journalctl -u ssh.service | egrep -c "Connection closed|Connection reset|drop connection|Timeout before authentication")
 # Total failed root login: $(journalctl -u ssh.service | grep -c "authenticating user root")
